@@ -1,0 +1,38 @@
+@tailwind base;
+
+@tailwind components;
+
+body {
+  font-family: "Roboto", sans-serif;
+  @apply bg-gray-200;
+  color: #fff;
+  width: 100%;
+}
+
+header {
+  background-color: #ff9f1c;
+}
+
+.aspect-3\/4 {
+  height: 0;
+  padding-top: 75%;
+}
+
+.btn {
+  @apply font-bold py-2 px-4 rounded;
+}
+
+.btn-blue {
+  @apply bg-blue-500 text-white;
+}
+
+.btn-blue:hover {
+  @apply bg-blue-700;
+}
+
+.card {
+  @apply relative w-32 h-40 flex justify-center items-center rounded-lg shadow-lg px-8;
+}
+
+@tailwind utilities;
+
