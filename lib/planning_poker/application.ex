@@ -8,7 +8,7 @@ defmodule PlanningPoker.Application do
     children = [
       {Registry, keys: :unique, name: Registry.PlanningPoker},
       PlanningPokerWeb.Endpoint,
-      PlanningPokerWeb.Presence,
+      PlanningPokerWeb.Presence
     ]
 
     opts = [strategy: :one_for_one, name: PlanningPoker.Supervisor]

@@ -1,5 +1,6 @@
 defmodule PlanningPokerWeb.Online do
   use Phoenix.LiveComponent
+
   def render(assigns) do
     ~L"""
     <div class="px-3 py-2 text-gray-900">

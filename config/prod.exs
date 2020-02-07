@@ -18,7 +18,7 @@ config :planning_poker, PlanningPokerWeb.Endpoint,
     port: 443,
     cipher_suite: :strong,
     keyfile: System.get_env("KEY_FILE"),
-    cacertfile: System.get_env("CA_CERT_FILE"),  
+    cacertfile: System.get_env("CA_CERT_FILE"),
     certfile: System.get_env("CERT_FILE")
   ]
 

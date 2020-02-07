@@ -1,5 +1,6 @@
 defmodule PlanningPokerWeb.Betting do
   use Phoenix.LiveComponent
+
   def render(assigns) do
     ~L"""
     <div class="w-full flex flex-col rounded border bg-white text-gray-900 shadow">

@@ -15,7 +15,7 @@ defmodule PlanningPoker.MixProject do
         planning_poker: [
           include_executables_for: [:unix],
           applications: [runtime_tools: :permanent],
-          steps: [ :assemble, :tar ]
+          steps: [:assemble, :tar]
         ]
       ]
     ]

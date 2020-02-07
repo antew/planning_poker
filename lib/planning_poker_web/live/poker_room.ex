@@ -1,6 +1,5 @@
 defmodule PlanningPokerWeb.PokerRoom do
   use Phoenix.LiveView
-  use Phoenix.LiveComponent
   alias PlanningPokerWeb.Presence
   alias PlanningPoker.PokerAgent
 
@@ -8,14 +7,25 @@ defmodule PlanningPokerWeb.PokerRoom do
     ~L"""
     <div class="flex flex-col lg:flex-row w-full mt-6 px-4">
       <div class="flex flex-col w-full lg:w-64">
-        <%= live_component @socket, PlanningPokerWeb.Configuration, username: @username %>
+        <%= live_component @socket, 
+          PlanningPokerWeb.Configuration, 
+          user_id: @user_id, 
+          username: @username, 
+          show_votes: @show_votes, 
+          observers: @observers 
+        %>
       </div>
       <div class="flex flex-col px-6">
         <div class="flex flex-wrap">
           <%= live_component @socket, PlanningPokerWeb.Betting, users: @users %>
         </div>
         <div class="flex w-full flex-wrap mt-6">
-          <%= live_component @socket, PlanningPokerWeb.Board, users: @users, show_votes: @show_votes %>
+          <%= live_component @socket, 
+            PlanningPokerWeb.Board, 
+            users: @users, 
+            show_votes: @show_votes, 
+            observers: @observers 
+          %>
         </div>
       </div>
       <div class="w-full lg:w-64 h-full flex flex-col rounded border bg-white text-black shadow">
@@ -48,15 +58,19 @@ defmodule PlanningPokerWeb.PokerRoom do
       send(self(), :after_join)
       Presence.track(self(), topic(room_id), user_id, %{})
 
+      observers = PokerAgent.observers(agent)
+      users = PokerAgent.state(agent)
+
       {:ok,
        assign(socket,
-         username: "",
+         username: PokerAgent.username(agent, user_id),
          user_id: user_id,
-         users: PokerAgent.state(agent),
+         users: users,
          room: agent,
-         show_votes: false,
+         show_votes: PokerAgent.get_show_votes(agent),
          time: nil,
-         room_id: room_id
+         room_id: room_id,
+         observers: PokerAgent.observers(agent)
        )}
     else
       {:ok,
@@ -67,7 +81,8 @@ defmodule PlanningPokerWeb.PokerRoom do
          room: agent,
          show_votes: false,
          time: nil,
-         room_id: room_id
+         room_id: room_id,
+         observers: MapSet.new()
        )}
     end
   end
@@ -78,15 +93,32 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, socket}
   end
 
-  def handle_event("username", %{"_target" => ["username"], "username" => username}, socket) do
+  def handle_event("username", %{"value" => username}, socket) do
     %{user_id: user_id, room: room} = socket.assigns
     PokerAgent.update_username(room, user_id, username)
     {:noreply, assign(socket, username: username)}
   end
 
+  def handle_event("observer", %{"value" => val}, socket) do
+    %{user_id: user_id, room: room, observers: observers} = socket.assigns
+    PokerAgent.update_observer(room, user_id, true)
+    {:noreply, assign(socket, observer: MapSet.put(observers, user_id))}
+  end
+
+  def handle_event("observer", _, socket) do
+    %{user_id: user_id, room: room, observers: observers} = socket.assigns
+    PokerAgent.update_observer(room, user_id, false)
+    {:noreply, assign(socket, observer: MapSet.delete(observers, user_id))}
+  end
+
   def handle_event("show-votes", _params, socket) do
     PokerAgent.show_votes(socket.assigns.room)
-    {:noreply, assign(socket, show_votes: true)}
+    {:noreply, socket}
+  end
+
+  def handle_event("hide-votes", _params, socket) do
+    PokerAgent.hide_votes(socket.assigns.room)
+    {:noreply, socket}
   end
 
   def handle_event("clear-votes", _params, socket) do
@@ -98,8 +130,16 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, users: users)}
   end
 
+  def handle_info({:observers_change, observers}, socket) do
+    {:noreply, assign(socket, observers: observers)}
+  end
+
   def handle_info(:show_votes, socket) do
     {:noreply, assign(socket, show_votes: true)}
+  end
+
+  def handle_info(:hide_votes, socket) do
+    {:noreply, assign(socket, show_votes: false)}
   end
 
   def handle_info(:after_join, socket) do

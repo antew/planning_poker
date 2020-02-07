@@ -26,6 +26,7 @@
     "postcss-loader": "^3.0.0",
     "purgecss-webpack-plugin": "^2.0.5",
     "tailwindcss": "^1.1.4",
+    "tailwindcss-transitions": "^2.2.0",
     "uglifyjs-webpack-plugin": "^1.2.4",
     "webpack": "4.4.0",
     "webpack-cli": "^2.0.10"
