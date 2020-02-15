@@ -5,25 +5,32 @@ defmodule PlanningPokerWeb.PokerRoom do
 
   def render(assigns) do
     ~L"""
-    <div class="flex flex-col lg:flex-row w-full mt-6 px-4">
+    <div class="flex flex-col lg:flex-row w-full mt-6 px-4 justify-center">
       <div class="flex flex-col w-full lg:w-64">
         <%= live_component @socket, 
           PlanningPokerWeb.Configuration, 
           user_id: @user_id, 
           username: @username, 
-          show_votes: @show_votes, 
-          observers: @observers 
+          show_bets: @show_bets, 
+          users: @users,
+          observers: @observers,
+          points: @points,
+          auto_reveal_bets: @auto_reveal_bets
         %>
       </div>
-      <div class="flex flex-col px-6">
+      <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
         <div class="flex flex-wrap">
-          <%= live_component @socket, PlanningPokerWeb.Betting, users: @users %>
+          <%= live_component @socket, 
+            PlanningPokerWeb.Betting, 
+            users: @users,
+            points: @points 
+          %>
         </div>
         <div class="flex w-full flex-wrap mt-6">
           <%= live_component @socket, 
             PlanningPokerWeb.Board, 
             users: @users, 
-            show_votes: @show_votes, 
+            show_bets: @show_bets, 
             observers: @observers 
           %>
         </div>
@@ -35,61 +42,50 @@ defmodule PlanningPokerWeb.PokerRoom do
     """
   end
 
-  def mount(%{"id" => room_id}, session, socket) do
-    # Presence.track(self(), "users", name, %{})
-    {:ok, agent} =
-      case Registry.lookup(Registry.PlanningPoker, room_id) do
-        [] ->
-          name = {:via, Registry, {Registry.PlanningPoker, room_id}}
-          PokerAgent.start_link(room_id, name)
-
-        [{pid, _}] ->
-          {:ok, pid}
-
-        {:error, {:already_started, pid}} ->
-          {:ok, pid}
-      end
+  def mount(%{"id" => room_id}, _session, socket) do
+    {:ok, agent} = PokerAgent.get_or_create(room_id)
 
     if connected?(socket) do
-      # PubSub.subscribe(PlanningPoker.PubSub, room_id)
       PlanningPokerWeb.Endpoint.subscribe(room_id)
       user_id = get_connect_params(socket)["user_id"]
-      PokerAgent.update_username(agent, user_id, session["username"])
       send(self(), :after_join)
       Presence.track(self(), topic(room_id), user_id, %{})
 
-      observers = PokerAgent.observers(agent)
-      users = PokerAgent.state(agent)
+      state = PokerAgent.state(agent)
 
       {:ok,
        assign(socket,
          username: PokerAgent.username(agent, user_id),
          user_id: user_id,
-         users: users,
+         users: state.users,
          room: agent,
-         show_votes: PokerAgent.get_show_votes(agent),
-         time: nil,
+         show_bets: state.show_bets,
          room_id: room_id,
-         observers: PokerAgent.observers(agent)
+         observers: state.observers,
+         points: state.points,
+         auto_reveal_bets: state.auto_reveal_bets
        )}
     else
+      state = PokerAgent.state(agent)
+
       {:ok,
        assign(socket,
          username: "",
          user_id: nil,
-         users: PokerAgent.state(agent),
+         users: state.users,
          room: agent,
-         show_votes: false,
-         time: nil,
+         show_bets: state.show_bets,
          room_id: room_id,
-         observers: MapSet.new()
+         observers: state.observers,
+         points: state.points,
+         auto_reveal_bets: state.auto_reveal_bets
        )}
     end
   end
 
   def handle_event("bet", %{"bet" => my_bet}, socket) do
     %{user_id: user_id, room: room} = socket.assigns
-    PokerAgent.vote(room, user_id, my_bet)
+    PokerAgent.bet(room, user_id, my_bet)
     {:noreply, socket}
   end
 
@@ -99,7 +95,7 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, username: username)}
   end
 
-  def handle_event("observer", %{"value" => val}, socket) do
+  def handle_event("observer", %{"value" => _}, socket) do
     %{user_id: user_id, room: room, observers: observers} = socket.assigns
     PokerAgent.update_observer(room, user_id, true)
     {:noreply, assign(socket, observer: MapSet.put(observers, user_id))}
@@ -111,41 +107,68 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, observer: MapSet.delete(observers, user_id))}
   end
 
-  def handle_event("show-votes", _params, socket) do
-    PokerAgent.show_votes(socket.assigns.room)
+  def handle_event("auto-reveal-bets", %{"value" => _}, socket) do
+    %{room: room} = socket.assigns
+    PokerAgent.set_auto_reveal_bets(room, true)
+    {:noreply, assign(socket, auto_reveal_bets: true)}
+  end
+
+  def handle_event("auto-reveal-bets", _, socket) do
+    %{room: room} = socket.assigns
+    PokerAgent.set_auto_reveal_bets(room, false)
+    {:noreply, assign(socket, auto_reveal_bets: false)}
+  end
+
+  def handle_event("show-bets", _params, socket) do
+    PokerAgent.show_bets(socket.assigns.room)
     {:noreply, socket}
   end
 
-  def handle_event("hide-votes", _params, socket) do
-    PokerAgent.hide_votes(socket.assigns.room)
+  def handle_event("hide-bets", _params, socket) do
+    PokerAgent.hide_bets(socket.assigns.room)
     {:noreply, socket}
   end
 
-  def handle_event("clear-votes", _params, socket) do
-    PokerAgent.clear_votes(socket.assigns.room)
-    {:noreply, assign(socket, show_votes: false)}
+  def handle_event("clear-bets", _params, socket) do
+    PokerAgent.clear_bets(socket.assigns.room)
+    {:noreply, assign(socket, show_bets: false)}
   end
 
-  def handle_info({:change, users}, socket) do
-    {:noreply, assign(socket, users: users)}
+  def handle_event("points", %{"value" => value}, socket) do
+    PokerAgent.set_points(socket.assigns.room, value)
+    {:noreply, assign(socket, points: value)}
+  end
+
+  def handle_info({:change, state}, socket) do
+    {:noreply,
+     assign(socket,
+       show_bets: state.show_bets,
+       users: state.users,
+       auto_reveal_bets: state.auto_reveal_bets,
+       points: state.points
+     )}
   end
 
   def handle_info({:observers_change, observers}, socket) do
     {:noreply, assign(socket, observers: observers)}
   end
 
-  def handle_info(:show_votes, socket) do
-    {:noreply, assign(socket, show_votes: true)}
+  def handle_info(:show_bets, socket) do
+    {:noreply, assign(socket, show_bets: true)}
   end
 
-  def handle_info(:hide_votes, socket) do
-    {:noreply, assign(socket, show_votes: false)}
+  def handle_info(:hide_bets, socket) do
+    {:noreply, assign(socket, show_bets: false)}
   end
 
   def handle_info(:after_join, socket) do
     %{room: room, room_id: room_id} = socket.assigns
     PokerAgent.presence_change(room, Presence.list(topic(room_id)))
     {:noreply, socket}
+  end
+
+  def handle_info({:update_points, points}, socket) do
+    {:noreply, assign(socket, points: points)}
   end
 
   defp topic(room_id), do: "poker:#{room_id}"

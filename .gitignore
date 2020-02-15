@@ -36,3 +36,6 @@ npm-debug.log
 config/*.secret.exs
 
 .envrc
+
+.elixir_ls
+tags

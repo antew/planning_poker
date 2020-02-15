@@ -6,28 +6,53 @@ defmodule PlanningPoker.PokerAgent do
     defstruct(
       room_id: nil,
       users: %{},
-      votes: %{},
-      show_votes: false,
+      bets: %{},
+      show_bets: false,
       presence: %{},
-      observers: MapSet.new()
+      observers: MapSet.new(),
+      points: "1, 2, 3, 5, 8, 13, 21",
+      auto_reveal_bets: false
     )
   end
 
-  def start_link(room_id, name) do
+  def get_or_create(room_id) do
+    case Registry.lookup(Registry.PlanningPoker, room_id) do
+      [] ->
+        name = {:via, Registry, {Registry.PlanningPoker, room_id}}
+        start_link(room_id, name)
+
+      [{pid, _}] ->
+        {:ok, pid}
+
+      {:error, {:already_started, pid}} ->
+        {:ok, pid}
+    end
+  end
+
+  defp start_link(room_id, name) do
     Agent.start_link(fn -> %State{room_id: room_id} end, name: name)
   end
 
   def state(pid) do
     Agent.get(pid, fn state ->
-      Enum.map(state.users, fn {user_id, username} ->
-        %{
-          username: username,
-          user_id: user_id,
-          vote: Map.get(state.votes, user_id),
-          presence: Map.get(state.presence, user_id),
-          observer: Map.get(state.observers, user_id)
-        }
-      end)
+      users =
+        Enum.map(state.users, fn {user_id, username} ->
+          %{
+            username: username,
+            user_id: user_id,
+            bet: Map.get(state.bets, user_id),
+            presence: Map.get(state.presence, user_id),
+            observer: Map.get(state.observers, user_id)
+          }
+        end)
+
+      %{
+        show_bets: state.show_bets,
+        users: users,
+        points: state.points,
+        auto_reveal_bets: state.auto_reveal_bets,
+        observers: state.observers
+      }
     end)
   end
 
@@ -39,18 +64,21 @@ defmodule PlanningPoker.PokerAgent do
     Agent.get(pid, fn state -> state.observers end)
   end
 
-  def get_show_votes(pid) do
-    Agent.get(pid, fn state -> state.show_votes end)
+  def get_show_bets(pid) do
+    Agent.get(pid, fn state -> state.show_bets end)
   end
 
   def username(pid, user_id) do
     Agent.get(pid, fn state -> Map.get(state.users, user_id) end)
   end
 
-  def vote(pid, user_id, vote) do
+  def bet(pid, user_id, bet) do
     Agent.update(pid, fn state ->
-      %{state | votes: Map.put(state.votes, user_id, vote)}
+      %{state | bets: Map.put(state.bets, user_id, bet)}
     end)
+
+    auto_reveal_bets? = Agent.get(pid, fn state -> state.auto_reveal_bets end)
+    if auto_reveal_bets?, do: reveal_bets_if_needed(pid)
 
     PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
   end
@@ -83,25 +111,55 @@ defmodule PlanningPoker.PokerAgent do
     PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
   end
 
-  def show_votes(pid) do
-    Agent.update(pid, fn state -> %{state | show_votes: true} end)
-    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), :show_votes)
+  def show_bets(pid) do
+    Agent.update(pid, fn state -> %{state | show_bets: true} end)
+    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), :show_bets)
   end
 
-  def hide_votes(pid) do
-    Agent.update(pid, fn state -> %{state | show_votes: false} end)
-    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), :hide_votes)
+  def hide_bets(pid) do
+    Agent.update(pid, fn state -> %{state | show_bets: false} end)
+    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), :hide_bets)
   end
 
-  def clear_votes(pid) do
+  def clear_bets(pid) do
     Agent.update(pid, fn state ->
       %{
         state
-        | votes:
-            Enum.map(state.votes, fn {username, _} -> {username, nil} end)
+        | bets:
+            Enum.map(state.bets, fn {username, _} -> {username, nil} end)
             |> Enum.into(%{}),
-          show_votes: false
+          show_bets: false
       }
+    end)
+
+    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
+  end
+
+  def set_points(pid, points) do
+    Agent.update(pid, fn state -> %{state | points: points} end)
+    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
+  end
+
+  def set_auto_reveal_bets(pid, enabled) do
+    Agent.update(pid, fn state -> %{state | auto_reveal_bets: enabled} end)
+    reveal_bets_if_needed(pid)
+    PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
+  end
+
+  defp reveal_bets_if_needed(pid) do
+    Agent.update(pid, fn state ->
+      all_bet =
+        state.users
+        |> Enum.all?(fn {user_id, _} ->
+          MapSet.member?(state.observers, user_id) or
+            Map.get(state.bets, user_id, nil) != nil
+        end)
+
+      if all_bet do
+        %{state | show_bets: true}
+      else
+        state
+      end
     end)
 
     PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:change, state(pid)})
