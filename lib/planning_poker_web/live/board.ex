@@ -1,5 +1,6 @@
 defmodule PlanningPokerWeb.Board do
   use Phoenix.LiveComponent
+  alias PlanningPokerWeb.Util
 
   def render(assigns) do
     ~L"""
@@ -12,7 +13,7 @@ defmodule PlanningPokerWeb.Board do
             </span> 
           </div>
           <div class="w-full mt-1 text-gray-900 text-center">
-            <%= if blank?(user.username), do: "Anonymous", else: user.username %>
+            <%= if Util.blank?(user.username), do: "Anonymous", else: user.username %>
           </div>
         </div>
       <% end %>
@@ -45,7 +46,4 @@ defmodule PlanningPokerWeb.Board do
         "text-xs"
     end
   end
-
-  defp blank?(nil), do: true
-  defp blank?(str), do: String.length(String.trim(str)) == 0
 end

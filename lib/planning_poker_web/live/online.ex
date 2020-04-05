@@ -1,5 +1,6 @@
 defmodule PlanningPokerWeb.Online do
   use Phoenix.LiveComponent
+  alias PlanningPokerWeb.Util
 
   def render(assigns) do
     ~L"""
@@ -14,7 +15,7 @@ defmodule PlanningPokerWeb.Online do
               <span class="w-2 h-2 inline-block bg-red-300 rounded-full"></span>
             <% end %>
             <span class="ml-2">
-              <%= user.username || "Anonymous" %>
+              <%= if Util.blank?(user.username), do: "Anonymous", else: user.username %>
             </span>
           </div>
         <% end %>

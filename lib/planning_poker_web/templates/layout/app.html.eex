@@ -4,6 +4,14 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta property="og:url" content="https://poker.antew.dev"/>
+    <meta property="og:title" content="Planning Poker"/>
+    <meta property="og:description" content="Open source planning poker. https://github.com/antew/planning_poker"/>
+    <meta property="og:site_name" content="Antew"/>
+
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16" />
     <title>Planning Poker</title>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
