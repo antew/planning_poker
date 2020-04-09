@@ -18,7 +18,6 @@ defmodule PlanningPokerWeb.Router do
     pipe_through :browser
 
     get "/", LandingController, :index
-    post "/", SessionController, :new
 
     live "/:id", PokerRoom
   end
