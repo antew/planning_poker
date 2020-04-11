@@ -64,14 +64,19 @@ defmodule PlanningPokerWeb.Configuration do
             <button class="btn btn-blue disabled:opacity-50" type="button" phx-click="hide-bets" >Hide Bets</button>
           <% else %>
             <button 
-              class="btn btn-blue disabled:opacity-50" 
+              class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed" 
               type="button" 
               phx-click="show-bets"
               <%= if not someone_has_bet do %>disabled<% end %>
             >Show Bets
             </button>
           <% end %>
-          <button class="btn btn-blue mt-3" type="button" phx-click="clear-bets">Clear Bets</button>
+          <button 
+          class="btn btn-blue mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button"
+          phx-click="clear-bets"
+          <%= if not someone_has_bet do %>disabled<% end %>
+          >Clear Bets</button>
         </div>
       </div>
     </div>
