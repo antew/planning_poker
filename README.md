@@ -3,7 +3,7 @@
 Create a room, https://poker.antew.dev
 The room name can be anything you want, e.g. https://poker.antew.dev/fluffy-bunnies
 
-![App screenshot](/priv/static/images/app-screenshot.png)
+![App screenshot](/assets/static/images/app-screenshot.png)
 
 This is a small application for planning poker that I made to try out [Phoenix LiveView](https://github.com/phoenixframework/phoenix_live_view).
 
