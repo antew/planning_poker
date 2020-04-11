@@ -162,7 +162,8 @@ defmodule PlanningPokerWeb.PokerRoom do
   end
 
   def handle_info(:after_join, socket) do
-    %{room: room, room_id: room_id} = socket.assigns
+    %{room: room, room_id: room_id, username: username, user_id: user_id} = socket.assigns
+    PokerAgent.update_username(room, user_id, username)
     PokerAgent.presence_change(room, Presence.list(topic(room_id)))
     {:noreply, socket}
   end
