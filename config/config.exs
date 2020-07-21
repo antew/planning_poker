@@ -8,14 +8,15 @@
 use Mix.Config
 
 config :planning_poker,
-  ecto_repos: [PlanningPoker.Repo]
+  ecto_repos: [PlanningPoker.Repo],
+  live_view_dashboard: [password:  ""]
 
 # Configures the endpoint
 config :planning_poker, PlanningPokerWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "hq3W9tOivQELKQV9JBGGFzq0PIcWY94kH+u9Gc51ciGBhdFuqoB9eFZ0YYQ+TWys",
   render_errors: [view: PlanningPokerWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: PlanningPoker.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: PlanningPoker.PubSub,
   live_view: [signing_salt: "Xq0sdPWuD1793to6c3OyXzRv6uVPOHNU"]
 
 # Configures Elixir's Logger

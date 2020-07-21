@@ -7,6 +7,7 @@ defmodule PlanningPoker.Application do
   def start(_type, _args) do
     children = [
       {Registry, keys: :unique, name: Registry.PlanningPoker},
+      {Phoenix.PubSub, [name: PlanningPoker.PubSub, adapter: Phoenix.PubSub.PG2]},
       PlanningPokerWeb.Endpoint,
       PlanningPokerWeb.Presence
     ]

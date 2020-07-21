@@ -15,7 +15,8 @@ defmodule PlanningPokerWeb.PokerRoom do
           users: @users,
           observers: @observers,
           points: @points,
-          auto_reveal_bets: @auto_reveal_bets
+          auto_reveal_bets: @auto_reveal_bets,
+	  someone_has_bet: Enum.any?(assigns.users, fn u -> u.bet != nil end)
         %>
       </div>
       <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
@@ -23,7 +24,7 @@ defmodule PlanningPokerWeb.PokerRoom do
           <%= live_component @socket, 
             PlanningPokerWeb.Betting, 
             users: @users,
-            points: @points 
+            pointValues: String.split(@points, ",", trim: true)
           %>
         </div>
         <div class="flex w-full flex-wrap mt-6">

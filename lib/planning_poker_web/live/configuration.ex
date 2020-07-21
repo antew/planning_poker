@@ -2,8 +2,6 @@ defmodule PlanningPokerWeb.Configuration do
   use Phoenix.LiveComponent
 
   def render(assigns) do
-    someone_has_bet = Enum.any?(assigns.users, fn u -> u.bet != nil end)
-
     ~L"""
     <div class="w-full lg:max-w-md flex flex-col rounded border bg-white text-black shadow">
       <div class="m-3">
@@ -28,7 +26,7 @@ defmodule PlanningPokerWeb.Configuration do
             name="points"
             placeholder="1, 2, 3, 5, 8..."
             value="<%= @points %>"
-            <%= if someone_has_bet do %> disabled
+            <%= if @someone_has_bet do %> disabled
             title="The point system cannot be changed after a bet has been placed."
             disabled
             <% end %>
@@ -67,7 +65,7 @@ defmodule PlanningPokerWeb.Configuration do
               class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed" 
               type="button" 
               phx-click="show-bets"
-              <%= if not someone_has_bet do %>disabled<% end %>
+              <%= if not @someone_has_bet do %>disabled<% end %>
             >Show Bets
             </button>
           <% end %>
@@ -75,7 +73,7 @@ defmodule PlanningPokerWeb.Configuration do
           class="btn btn-blue mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           phx-click="clear-bets"
-          <%= if not someone_has_bet do %>disabled<% end %>
+          <%= if not @someone_has_bet do %>disabled<% end %>
           >Clear Bets</button>
         </div>
       </div>
