@@ -31,6 +31,7 @@ defmodule PlanningPokerWeb.Configuration do
             disabled
             <% end %>
             phx-keyup="points"
+            phx-blur="points"
           />
           <span class="mt-3 flex items-center">
             <input 
@@ -38,7 +39,7 @@ defmodule PlanningPokerWeb.Configuration do
               type="checkbox"
               class="mr-3"
               name="observer"
-              phx-click="observer"
+              phx-click="toggle-self-as-observer"
               value="true"
               <%= if MapSet.member?(@observers, @user_id) do %> checked<% end %>
              />

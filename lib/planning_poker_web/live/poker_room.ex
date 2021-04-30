@@ -5,41 +5,41 @@ defmodule PlanningPokerWeb.PokerRoom do
 
   def render(assigns) do
     ~L"""
-    <div class="flex flex-col lg:flex-row w-full mt-6 px-4 justify-center">
-      <div class="flex flex-col w-full lg:w-64">
-        <%= live_component @socket, 
-          PlanningPokerWeb.Configuration, 
-          user_id: @user_id, 
-          username: @username, 
-          show_bets: @show_bets, 
-          users: @users,
-          observers: @observers,
-          points: @points,
-          auto_reveal_bets: @auto_reveal_bets,
-	  someone_has_bet: Enum.any?(assigns.users, fn u -> u.bet != nil end)
-        %>
-      </div>
-      <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
-        <div class="flex flex-wrap">
-          <%= live_component @socket, 
-            PlanningPokerWeb.Betting, 
+      <div class="flex flex-col lg:flex-row w-full mt-6 px-4 justify-center">
+        <div class="flex flex-col w-full lg:w-64">
+          <%= live_component @socket,
+            PlanningPokerWeb.Configuration,
+            user_id: @user_id,
+            username: @username,
+            show_bets: @show_bets,
             users: @users,
-            pointValues: String.split(@points, ",", trim: true)
+            observers: @observers,
+            points: @points,
+            auto_reveal_bets: @auto_reveal_bets,
+            someone_has_bet: Enum.any?(assigns.users, fn u -> u.bet != nil end)
           %>
         </div>
-        <div class="flex w-full flex-wrap mt-6">
-          <%= live_component @socket, 
-            PlanningPokerWeb.Board, 
-            users: @users, 
-            show_bets: @show_bets, 
-            observers: @observers 
-          %>
+        <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
+          <div class="flex flex-wrap">
+            <%= live_component @socket,
+              PlanningPokerWeb.Betting,
+              users: @users,
+              pointValues: String.split(@points, ",", trim: true)
+            %>
+          </div>
+          <div class="flex w-full flex-wrap mt-6">
+            <%= live_component @socket,
+              PlanningPokerWeb.Board,
+              users: @users,
+              show_bets: @show_bets,
+              observers: @observers
+            %>
+          </div>
+        </div>
+        <div class="w-full lg:w-64 h-full flex flex-col rounded border bg-white text-black shadow">
+          <%= live_component @socket, PlanningPokerWeb.Online, users: @users, observers: @observers %>
         </div>
       </div>
-      <div class="w-full lg:w-64 h-full flex flex-col rounded border bg-white text-black shadow">
-        <%= live_component @socket, PlanningPokerWeb.Online, users: @users %>
-      </div>
-    </div>
     """
   end
 
@@ -96,16 +96,33 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, username: username)}
   end
 
-  def handle_event("observer", %{"value" => _}, socket) do
-    %{user_id: user_id, room: room, observers: observers} = socket.assigns
+  defp mark_as_observer(user_id, socket) do
+    %{room: room, observers: observers} = socket.assigns
     PokerAgent.update_observer(room, user_id, true)
     {:noreply, assign(socket, observer: MapSet.put(observers, user_id))}
   end
 
-  def handle_event("observer", _, socket) do
-    %{user_id: user_id, room: room, observers: observers} = socket.assigns
+  defp unmark_as_observer(user_id, socket) do
+    %{room: room, observers: observers} = socket.assigns
     PokerAgent.update_observer(room, user_id, false)
     {:noreply, assign(socket, observer: MapSet.delete(observers, user_id))}
+  end
+
+  def handle_event("toggle-self-as-observer", params, socket) do
+    case params do
+      %{"value" => _} ->
+        unmark_as_observer(socket.assigns.user_id, socket)
+      _ ->
+        mark_as_observer(socket.assigns.user_id, socket)
+    end
+  end
+
+  def handle_event("mark-as-observer", %{ "user-id" => user_id }, socket) do
+    mark_as_observer(user_id, socket)
+  end
+
+  def handle_event("unmark-as-observer", %{ "user-id" => user_id }, socket) do
+    unmark_as_observer(user_id, socket)
   end
 
   def handle_event("auto-reveal-bets", %{"value" => _}, socket) do
