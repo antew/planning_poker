@@ -155,7 +155,7 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, show_bets: false)}
   end
 
-  def handle_event("points", %{"value" => value}, socket) do
+  def handle_event("points", %{"points" => value}, socket) do
     PokerAgent.set_points(socket.assigns.room, value)
     {:noreply, assign(socket, points: value)}
   end

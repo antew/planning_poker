@@ -8,7 +8,7 @@ defmodule PlanningPokerWeb.Configuration do
         <div class="border-b-2 -mx-3 px-3 pb-1 uppercase tracking-wider">Configuration</div>
         <div class="flex flex-col mt-3 items-start justify-around">
           <label for="username" class="w-1/3 mb-1 uppercase text-sm tracking-wide">Username</label>
-          <input 
+          <input
             id="username"
             class="w-full bg-gray-200 appearance-none border-2 border-gray-200 rounded p-2"
             type="text"
@@ -18,24 +18,24 @@ defmodule PlanningPokerWeb.Configuration do
             phx-keyup="username"
             maxlength="15"
           />
-          <label for="points" class="w-2/3 mt-3 mb-1 uppercase text-sm tracking-wide">Point System</label>
-          <input 
-            id="points"
-            class="w-full bg-gray-200 appearance-none border-2 border-gray-200 rounded p-2"
-            type="text"
-            name="points"
-            placeholder="1, 2, 3, 5, 8..."
-            value="<%= @points %>"
-            <%= if @someone_has_bet do %> disabled
-            title="The point system cannot be changed after a bet has been placed."
-            disabled
-            <% end %>
-            phx-keyup="points"
-            phx-blur="points"
-          />
+          <form phx-change="points">
+            <label for="points" class="w-2/3 mt-3 mb-1 uppercase text-sm tracking-wide">Point System</label>
+            <input
+              id="points"
+              class="w-full bg-gray-200 appearance-none border-2 border-gray-200 rounded p-2"
+              type="text"
+              name="points"
+              placeholder="1, 2, 3, 5, 8..."
+              value="<%= @points %>"
+              <%= if @someone_has_bet do %>
+              title="The point system cannot be changed after a bet has been placed."
+              disabled
+              <% end %>
+            />
+          </form>
           <span class="mt-3 flex items-center">
-            <input 
-              id="observer" 
+            <input
+              id="observer"
               type="checkbox"
               class="mr-3"
               name="observer"
@@ -46,8 +46,8 @@ defmodule PlanningPokerWeb.Configuration do
             <label for="observer" class="mt-1">I'm an observer</label>
           </span>
           <span class="mt-3 flex items-center">
-            <input 
-              id="auto-reveal-bets" 
+            <input
+              id="auto-reveal-bets"
               type="checkbox"
               class="mr-3"
               name="auto-reveal-bets"
@@ -60,18 +60,19 @@ defmodule PlanningPokerWeb.Configuration do
         </div>
         <div class="flex flex-col justify-around mt-4">
           <%= if @show_bets do %>
-            <button class="btn btn-blue disabled:opacity-50" type="button" phx-click="hide-bets" >Hide Bets</button>
+            <button class="btn btn-blue disabled:opacity-50 focus:outline-none focus:ring-2" type="button" phx-click="hide-bets" >Hide Bets</button>
           <% else %>
-            <button 
-              class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed" 
-              type="button" 
+            <button
+              class="btn btn-blue disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2"
+              type="button"
               phx-click="show-bets"
               <%= if not @someone_has_bet do %>disabled<% end %>
             >Show Bets
             </button>
           <% end %>
-          <button 
-          class="btn btn-blue mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+
+          <button
+          class="btn btn-blue mt-3 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2"
           type="button"
           phx-click="clear-bets"
           <%= if not @someone_has_bet do %>disabled<% end %>
