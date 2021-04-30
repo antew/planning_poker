@@ -6,7 +6,7 @@ defmodule PlanningPokerWeb.Online do
     ~L"""
     <div class="px-3 py-2 text-gray-900">
       <div class="border-b-2 -mx-3 px-3 pb-1 uppercase tracking-wider">Connected</div>
-      <ul class="mt-3">
+      <ul class="mt-3 space-y-2">
         <%= for user <- @users do %>
           <div class="flex items-center">
             <%= user_info(user, assigns) %>
@@ -24,7 +24,7 @@ defmodule PlanningPokerWeb.Online do
     ~L"""
       <%= if MapSet.member?(@observers, user.user_id) do %>
         <button type="button"
-          class="bg-gray-600 rounded-full shadow-md py-1 px-2 text-xs uppercase text-white flex-shrink-0"
+          class="bg-gray-600 rounded-full shadow-md py-1 px-2 text-xs uppercase text-white flex-shrink-0 focus:outline-none focus:ring-2"
           title="Click to resume as a player"
           phx-click="unmark-as-observer"
           phx-value-user-id="<%= user.user_id %>">
