@@ -21,11 +21,14 @@ defmodule PlanningPokerWeb.PokerRoom do
         </div>
         <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
           <div class="flex flex-wrap">
-            <%= live_component @socket,
-              PlanningPokerWeb.Betting,
-              users: @users,
-              pointValues: String.split(@points, ",", trim: true)
-            %>
+            <fieldset class="w-full" <%= if MapSet.member?(@observers, @user_id) do %>disabled<% end %>>
+              <%= live_component @socket,
+                PlanningPokerWeb.Betting,
+                users: @users,
+                observers: @observers,
+                pointValues: String.split(@points, ",", trim: true)
+              %>
+            </fieldset>
           </div>
           <div class="flex w-full flex-wrap mt-6">
             <%= live_component @socket,
