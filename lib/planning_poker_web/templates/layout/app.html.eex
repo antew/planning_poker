@@ -19,7 +19,7 @@
   </head>
   <body>
     <nav>
-      <div class="flex items-center justify-between flex-wrap bg-gray-800 p-6">
+      <div class="flex items-center justify-between flex-wrap bg-gradient-to-r from-gray-900 to-gray-800 p-6">
         <a href="/" class="font-semibold text-xl tracking-tight">Planning Poker</a>
       </div>
     </nav>

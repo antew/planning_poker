@@ -3,9 +3,9 @@ defmodule PlanningPokerWeb.Configuration do
 
   def render(assigns) do
     ~L"""
-    <div class="w-full lg:max-w-md flex flex-col rounded border bg-white text-black shadow">
-      <div class="m-3">
-        <div class="border-b-2 -mx-3 px-3 pb-1 uppercase tracking-wider">Configuration</div>
+    <div class="w-full lg:max-w-md flex flex-col rounded-lg border bg-white text-black shadow-lg">
+      <div class="py-6 px-4">
+        <div class="border-b-2 border-gray-300 -mx-3 px-3 pb-1 uppercase tracking-wider">Configuration</div>
         <div class="flex flex-col mt-3 items-start justify-around">
           <label for="username" class="w-1/3 mb-1 uppercase text-sm tracking-wide">Username</label>
           <input

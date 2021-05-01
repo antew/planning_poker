@@ -5,7 +5,7 @@ defmodule PlanningPokerWeb.PokerRoom do
 
   def render(assigns) do
     ~L"""
-      <div class="flex flex-col lg:flex-row w-full mt-6 px-4 justify-center">
+      <div class="flex flex-col lg:flex-row w-full my-6 px-4 justify-center">
         <div class="flex flex-col w-full lg:w-64">
           <%= live_component @socket,
             PlanningPokerWeb.Configuration,
@@ -39,7 +39,7 @@ defmodule PlanningPokerWeb.PokerRoom do
             %>
           </div>
         </div>
-        <div class="w-full lg:w-64 h-full flex flex-col rounded border bg-white text-black shadow">
+        <div class="w-full lg:w-64 h-full flex flex-col rounded-lg border bg-white text-black shadow-lg">
           <%= live_component @socket, PlanningPokerWeb.Online, users: @users, observers: @observers %>
         </div>
       </div>

@@ -4,8 +4,8 @@ defmodule PlanningPokerWeb.Online do
 
   def render(assigns) do
     ~L"""
-    <div class="px-3 py-2 text-gray-900">
-      <div class="border-b-2 -mx-3 px-3 pb-1 uppercase tracking-wider">Connected</div>
+    <div class="px-4 py-6 text-gray-900">
+      <div class="border-b-2 border-gray-300 -mx-3 px-3 pb-1 uppercase tracking-wider">Connected</div>
       <ul class="mt-3 space-y-2">
         <%= for user <- @users do %>
           <div class="flex items-center">
