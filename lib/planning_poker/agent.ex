@@ -95,6 +95,9 @@ defmodule PlanningPoker.PokerAgent do
       }
     end)
 
+    auto_reveal_bets? = Agent.get(pid, fn state -> state.auto_reveal_bets end)
+    if auto_reveal_bets?, do: reveal_bets_if_needed(pid)
+
     PubSub.broadcast(PlanningPoker.PubSub, room_id(pid), {:observers_change, observers(pid)})
   end
 
