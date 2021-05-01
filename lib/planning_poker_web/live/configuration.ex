@@ -17,6 +17,7 @@ defmodule PlanningPokerWeb.Configuration do
             value="<%= @username %>"
             phx-keyup="username"
             maxlength="15"
+            autocomplete="name"
           />
           <form phx-change="points">
             <label for="points" class="w-2/3 mt-3 mb-1 uppercase text-sm tracking-wide">Point System</label>
@@ -27,6 +28,7 @@ defmodule PlanningPokerWeb.Configuration do
               name="points"
               placeholder="1, 2, 3, 5, 8..."
               value="<%= @points %>"
+              autocomplete="off"
               <%= if @someone_has_bet do %>
               title="The point system cannot be changed after a bet has been placed."
               disabled
