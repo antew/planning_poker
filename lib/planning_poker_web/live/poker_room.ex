@@ -99,18 +99,6 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, username: username)}
   end
 
-  defp mark_as_observer(user_id, socket) do
-    %{room: room, observers: observers} = socket.assigns
-    PokerAgent.update_observer(room, user_id, true)
-    {:noreply, assign(socket, observer: MapSet.put(observers, user_id))}
-  end
-
-  defp unmark_as_observer(user_id, socket) do
-    %{room: room, observers: observers} = socket.assigns
-    PokerAgent.update_observer(room, user_id, false)
-    {:noreply, assign(socket, observer: MapSet.delete(observers, user_id))}
-  end
-
   def handle_event("toggle-self-as-observer", params, socket) do
     case params do
       %{"value" => _} ->
@@ -194,4 +182,16 @@ defmodule PlanningPokerWeb.PokerRoom do
   end
 
   defp topic(room_id), do: "poker:#{room_id}"
+
+  defp mark_as_observer(user_id, socket) do
+    %{room: room, observers: observers} = socket.assigns
+    PokerAgent.update_observer(room, user_id, true)
+    {:noreply, assign(socket, observer: MapSet.put(observers, user_id))}
+  end
+
+  defp unmark_as_observer(user_id, socket) do
+    %{room: room, observers: observers} = socket.assigns
+    PokerAgent.update_observer(room, user_id, false)
+    {:noreply, assign(socket, observer: MapSet.delete(observers, user_id))}
+  end
 end
