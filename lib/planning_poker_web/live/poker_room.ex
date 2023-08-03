@@ -4,45 +4,63 @@ defmodule PlanningPokerWeb.PokerRoom do
   alias PlanningPoker.PokerAgent
 
   def render(assigns) do
-    ~L"""
-      <div class="flex flex-col lg:flex-row w-full my-6 px-4 justify-center">
-        <div class="flex flex-col w-full lg:w-64">
-          <%= live_component @socket,
-            PlanningPokerWeb.Configuration,
-            user_id: @user_id,
-            username: @username,
-            show_bets: @show_bets,
-            users: @users,
-            observers: @observers,
-            points: @points,
-            auto_reveal_bets: @auto_reveal_bets,
-            someone_has_bet: Enum.any?(assigns.users, fn u -> u.bet != nil end)
-          %>
+    ~H"""
+    <div class="flex flex-col lg:flex-row w-full my-6 px-4 justify-center">
+      <div class="flex flex-col w-full lg:w-64">
+        <.live_component
+          module={PlanningPokerWeb.Configuration}
+          id="configuration"
+          user_id={@user_id}
+          username={@username}
+          show_bets={@show_bets}
+          users={@users}
+          observers={@observers}
+          points={@points}
+          auto_reveal_bets={@auto_reveal_bets}
+          someone_has_bet={Enum.any?(@users, fn u -> u.bet != nil end)}
+        />
+      </div>
+      <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
+        <div class="flex flex-wrap">
+          <fieldset
+            class="w-full"
+            disabled={if(MapSet.member?(@observers, @user_id), do: true, else: false)}
+          >
+            <.live_component
+              module={PlanningPokerWeb.Betting}
+              id="betting"
+              users={@users}
+              observers={@observers}
+              pointValues={String.split(@points, ",", trim: true)}
+            />
+          </fieldset>
         </div>
-        <div class="flex flex-1 flex-col px-0 lg:px-6 mt-3 lg:mt-0">
-          <div class="flex flex-wrap">
-            <fieldset class="w-full" <%= if MapSet.member?(@observers, @user_id) do %>disabled<% end %>>
-              <%= live_component @socket,
-                PlanningPokerWeb.Betting,
-                users: @users,
-                observers: @observers,
-                pointValues: String.split(@points, ",", trim: true)
-              %>
-            </fieldset>
-          </div>
-          <div class="flex w-full flex-wrap mt-6">
-            <%= live_component @socket,
-              PlanningPokerWeb.Board,
-              users: @users,
-              show_bets: @show_bets,
-              observers: @observers
-            %>
-          </div>
+        <div class="flex w-full flex-wrap mt-6">
+          <.live_component
+            module={PlanningPokerWeb.Board}
+            id="board"
+            players={Enum.filter(@users, fn user -> !MapSet.member?(@observers, user.user_id) end)}
+            show_bets={@show_bets}
+          />
         </div>
-        <div class="w-full lg:w-64 h-full flex flex-col rounded-lg border bg-white text-black shadow-lg">
-          <%= live_component @socket, PlanningPokerWeb.Online, users: @users, observers: @observers %>
+        <div class="flex w-full flex-wrap mt-6">
+          <.live_component
+            module={PlanningPokerWeb.Average}
+            id="average"
+            players={Enum.filter(@users, fn user -> !MapSet.member?(@observers, user.user_id) end)}
+            show_bets={@show_bets}
+          />
         </div>
       </div>
+      <div class="w-full lg:w-64 h-full flex flex-col rounded-lg border bg-white text-black shadow-lg">
+        <.live_component
+          module={PlanningPokerWeb.Online}
+          id="online"
+          users={@users}
+          observers={@observers}
+        />
+      </div>
+    </div>
     """
   end
 
@@ -99,20 +117,19 @@ defmodule PlanningPokerWeb.PokerRoom do
     {:noreply, assign(socket, username: username)}
   end
 
-  def handle_event("toggle-self-as-observer", params, socket) do
-    case params do
-      %{"value" => _} ->
-        unmark_as_observer(socket.assigns.user_id, socket)
-      _ ->
-        mark_as_observer(socket.assigns.user_id, socket)
+  def handle_event("toggle-self-as-observer", _params, socket) do
+    if MapSet.member?(socket.assigns.observers, socket.assigns.user_id) do
+      unmark_as_observer(socket.assigns.user_id, socket)
+    else
+      mark_as_observer(socket.assigns.user_id, socket)
     end
   end
 
-  def handle_event("mark-as-observer", %{ "user-id" => user_id }, socket) do
+  def handle_event("mark-as-observer", %{"user-id" => user_id}, socket) do
     mark_as_observer(user_id, socket)
   end
 
-  def handle_event("unmark-as-observer", %{ "user-id" => user_id }, socket) do
+  def handle_event("unmark-as-observer", %{"user-id" => user_id}, socket) do
     unmark_as_observer(user_id, socket)
   end
 

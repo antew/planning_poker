@@ -31,9 +31,8 @@ defmodule PlanningPokerWeb.Router do
   end
 
   pipeline :admins_only do
-    plug :basic_auth, 
-      username: "admin", 
-    password: Application.get_env(:planning_poker, :live_view_dashboard)[:password]
+    plug :basic_auth,
+      username: "admin",
+      password: Application.compile_env(:planning_poker, :live_view_dashboard)[:password]
   end
-
 end
