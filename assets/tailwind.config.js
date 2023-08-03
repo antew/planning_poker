@@ -1,4 +1,8 @@
 module.exports = {
+  mode: 'jit',
+  content: [
+    "../lib/**/*.ex"
+  ],
   prefix: '',
   important: false,
   separator: ':',

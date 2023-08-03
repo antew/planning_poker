@@ -3,26 +3,29 @@ defmodule PlanningPokerWeb.Board do
   alias PlanningPokerWeb.Util
 
   def render(assigns) do
-    ~L"""
-    <%= for user <- @users do %>
-      <%= if not MapSet.member?(@observers, user.user_id) do %>
+    ~H"""
+    <div class="flex">
+      <%= for user <- @players do %>
         <div class="flex flex-col mr-3 mb-3">
-          <div class="card <%= if user.bet == nil, do: 'bg-blue-900', else: 'bg-green-600' %>">
-            <span class="transition-opacity transition-750 overflow-x-scroll <%= bets_classes(@show_bets, user.bet) %>">
+          <div class={if is_nil(user.bet), do: "card bg-blue-900", else: "card bg-green-600"}>
+            <span class={bets_classes(@show_bets, user.bet)}>
               <%= if @show_bets, do: user.bet %>
-            </span> 
+            </span>
           </div>
           <div class="w-full mt-1 text-gray-900 text-center">
             <%= if Util.blank?(user.username), do: "Anonymous", else: user.username %>
           </div>
         </div>
       <% end %>
-    <% end %>
+    </div>
     """
   end
 
-  defp bets_classes(false, _), do: "opacity-0"
-  defp bets_classes(true, bet), do: "opacity-100 #{bet_font_size(bet)}"
+  defp bets_classes(false, _), do: "transition-opacity transition-750 opacity-0"
+
+  defp bets_classes(true, bet),
+    do: "transition-opacity transition-750 opacity-100 #{bet_font_size(bet)}"
+
   defp bet_font_size(nil), do: ""
 
   defp bet_font_size(str) do

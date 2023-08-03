@@ -4,10 +4,10 @@ defmodule PlanningPoker.MixProject do
   def project do
     [
       app: :planning_poker,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
@@ -40,17 +40,17 @@ defmodule PlanningPoker.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.8"},
+      {:phoenix, "~> 1.7.7"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:postgrex, "~> 0.15.9"},
-      {:phoenix_html, "~> 2.14"},
+      {:phoenix_html, "~> 3.3"},
       {:phoenix_live_reload, "~> 1.3", only: :dev},
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:phoenix_live_view, "~> 0.15.5"},
-      {:phoenix_live_dashboard, "~> 0.4"},
-      {:telemetry_poller, "~> 0.5"},
+      {:phoenix_live_view, "~> 0.19.5"},
+      {:phoenix_live_dashboard, "~> 0.8"},
+      {:phoenix_view, "~> 2.0"},
+      {:telemetry_poller, "~> 1.0"},
       {:telemetry_metrics, "~> 0.6"}
     ]
   end
