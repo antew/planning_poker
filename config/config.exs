@@ -8,8 +8,7 @@
 import Config
 
 config :planning_poker,
-  ecto_repos: [PlanningPoker.Repo],
-  live_view_dashboard: [password:  ""]
+  live_view_dashboard: [password: ""]
 
 # Configures the endpoint
 config :planning_poker, PlanningPokerWeb.Endpoint,
